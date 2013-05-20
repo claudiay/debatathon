@@ -1,5 +1,7 @@
 Chats chats chats
 
+gunicorn -b localhost:8000 -w 3 -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker app:my_app
+
 Things to do:
     - Pass and display a reason for deactivating a chat.
     - Assign users session_token via cookie

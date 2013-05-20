@@ -14,8 +14,18 @@ def my_app(environ, start_response):
     if path == "/":  
         return app(environ, start_response)  
     elif path == "/websocket":  
-        handle_websocket(environ["wsgi.websocket"])   
+        handle_websocket(environ["wsgi.websocket"])
     else:  
         return app(environ, start_response)  
 
+def log_request(self):
+    log = self.server.log
+    if log:
+        if hasattr(log, "info"):
+            log.info(self.format_request() + '\n')
+        else:
+            log.write(self.format_request() + '\n')
+
+import gevent
+gevent.pywsgi.WSGIHandler.log_request = log_request
 import views

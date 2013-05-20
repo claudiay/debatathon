@@ -53,6 +53,7 @@
 {% block extra_js %}
 <script>
 var topic = '';
+var chatting = false;
 
 $('.input').keypress(function (e) {
     if (e.which == 13) {
@@ -62,49 +63,55 @@ $('.input').keypress(function (e) {
 });
 
 function isChatting() {
-    topic = this.id;
     $('.btn').addClass('disabled');
     $('a.btn').removeAttr('href');
     $('#topic_form').addClass('hide');
     $('#chat_box').removeClass('hide');
     $('#chat_window').removeClass('hide');
     $('#chat_box').focus();
+    chatting = true;
 }
 
 function endChatting() {
+    $("p#chat_text").append("****Chat is ending****<br />");
     window.location = '/';
 }
 
-$("a.topic-chat").click(isChatting);
+function startChat() {
+    topic = this.id;
+    ws.send(JSON.stringify({'type': 'new',
+            'user': '{{user}}',
+            'topic': topic,
+            'active': true}));
+}
+
+$("a.topic-chat").click(startChat);
 
 $(function() {
     if ("WebSocket" in window) {
         ws = new WebSocket("ws://" + document.domain + ":8000/websocket");
         
-        // register new user
         ws.onopen = function(){
-            // WebSocket open, send new user info
             ws.send(JSON.stringify({'user': '{{user}}'}));
-        };
+        }
 
         ws.onmessage = function (msg) {
             var message = JSON.parse(msg.data);
-            console.log(message);
-            if (message.new_chat === true) {
-                ws.send(JSON.stringify({'output': message.output,
-                'user': '{{user}}',
-                'topic': message.topic }));
-            }
-            else {
-                $("p#chat_text").append(message.user + ': ' + message.output + '<br />');
-                document.getElementById("chat_window").scrollTop = document.getElementById("chat_window").scrollHeight;
+            if (message.type === 'new') {
+                chatting = true;
+                topic = message.topic;
                 isChatting();
+            } else {
+                if (message.active === false) {
+                    endChatting();
+                } else {
+                    isChatting();
+                    $("p#chat_text").append(message.user + ': ' + message.output + '<br />');
+                    document.getElementById("chat_window").scrollTop = document.getElementById("chat_window").scrollHeight;
+                }
             }
-            if (message.active === false) {
-                endChatting();
-            };
-        };
-    };
+        }
+    }
 
     $('#chat_form input[name=text]').focus();
 
@@ -116,9 +123,10 @@ $(function() {
         $(input).val('');
 
         ws.send(JSON.stringify({'output': message,
+            'type': 'chat',
             'user': '{{user}}',
             'topic': topic,
-            'new_chat': false}));
+            'active': true}));
     });
 
     window.onbeforeunload = function() {
