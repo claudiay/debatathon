@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block body_tag %}
+<body onload="document.topic_form.new_topic.focus()">
+{% endblock %}
+{% block main %}
+<div id="chat_window" class="hide">
+    <p id="chat_text">
+    Chats have started...<br>
+    </p>
+</div>
+<form id="chat_form" method="post">
+    <input type="text" name="text" id="chat_box" class="input-xxlarge hide" maxlength="200" placeholder="Chat something quickly!" />
+</form>
+    {% if full %}
+    <center>
+    <h4>Whoa whoa, your mind can only handle so many thoughts at a time.</h4>
+    </center>
+    {% endif %}
+    {% if form %}
+        <form name="topic_form" id="topic_form" method="POST" action="/">
+            <input class="input-xxlarge" id="new_topic" name="new_topic" type="text" maxlength="94" placeholder="New Topic" />
+        {% if form.errors %}
+            {% for field_name, field_errors in form.errors|dictsort if field_errors %}
+                {% for error in field_errors %}
+                <p class="text-error">{{ error }}</p>
+                {% endfor %}
+            {% endfor %}
+        {% endif %}
+        </form>
+    {% endif %}
+    <h3>Topics:</h3>
+    {% if topics %}
+    <table class="table">
+    {% for topic in topics %}
+        <tr>
+            <td>{{topic.topic}}</td>
+            {% if topic.author == user %}
+            <td>
+                <a href="/?del_topic={{topic.hash}}" class="topic-remove btn btn-mini btn-danger" type="button">remove</a>
+            </td><td></td>    
+            {% else %}
+            <td></td><td>
+                <a href="#" id ="{{topic.hash}}" class="topic-chat btn btn-mini btn-success" type="button">go chat <i class="icon-arrow-right"></i></a>
+            </td>    
+            {% endif %}
+        </tr>
+    {% endfor %}
+    </table>
+    {% else %}
+    <h4>No one is up for debating. You start first.</h4>
+    {% endif %}
+{% endblock %}
+{% block extra_js %}
+<script>
+var topic = '';
+
+$('.input').keypress(function (e) {
+    if (e.which == 13) {
+        $('form#new_topic').submit();
+        return false;
+    }
+});
+
+function isChatting() {
+    topic = this.id;
+    $('.btn').addClass('disabled');
+    $('a.btn').removeAttr('href');
+    $('#topic_form').addClass('hide');
+    $('#chat_box').removeClass('hide');
+    $('#chat_window').removeClass('hide');
+    $('#chat_box').focus();
+}
+
+function endChatting() {
+    window.location = '/';
+}
+
+$("a.topic-chat").click(isChatting);
+
+$(function() {
+    if ("WebSocket" in window) {
+        ws = new WebSocket("ws://" + document.domain + ":8000/websocket");
+        
+        // register new user
+        ws.onopen = function(){
+            // WebSocket open, send new user info
+            ws.send(JSON.stringify({'user': '{{user}}'}));
+        };
+
+        ws.onmessage = function (msg) {
+            var message = JSON.parse(msg.data);
+            console.log(message);
+            if (message.new_chat === true) {
+                ws.send(JSON.stringify({'output': message.output,
+                'user': '{{user}}',
+                'topic': message.topic }));
+            }
+            else {
+                $("p#chat_text").append(message.user + ': ' + message.output + '<br />');
+                document.getElementById("chat_window").scrollTop = document.getElementById("chat_window").scrollHeight;
+                isChatting();
+            }
+            if (message.active === false) {
+                endChatting();
+            };
+        };
+    };
+
+    $('#chat_form input[name=text]').focus();
+
+    $("#chat_form").on('submit', function(e){
+        e.preventDefault();
+
+        var input = $('#chat_form input[name=text]');
+        var message = $(input).val();
+        $(input).val('');
+
+        ws.send(JSON.stringify({'output': message,
+            'user': '{{user}}',
+            'topic': topic,
+            'new_chat': false}));
+    });
+
+    window.onbeforeunload = function() {
+        ws.onclose = function () {};
+        ws.close();
+    };
+});
+</script>
+{% endblock %}
