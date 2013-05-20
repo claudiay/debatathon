@@ -1,0 +1,12 @@
+Chats chats chats
+
+Things to do:
+    - Pass and display a reason for deactivating a chat.
+    - Assign users session_token via cookie
+        -bring up error if they do not have cookies enabled
+        -allow them to see website, but not to enter in topics
+    - Stylize things so they don't look awful
+    - Don't show the topic if the creater is currently chatting. 
+        -likewise, check the status of the creater before pushing to chats
+    - Maybe add a rating system, so if some one gets a lot of downvotes, they
+        aren't allowed to chat for a set amount of time. (IP based.)
