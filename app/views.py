@@ -1,15 +1,15 @@
 #!/usr/bin/env python
-import redis
 import random
 import os
 from app import app, r
 from flask import Flask, request, render_template, redirect, session, url_for
 from forms import TopicForm
+from users import User
 
 @app.route("/", methods=['POST', 'GET'])
 def home():
     if 'username' in session:
-	user = session['username']
+	user = User(session['username'])
 	activeuser = "activeuser:%s" % user
 	if r.ttl(activeuser) <= 0: # should this user be allowed to exist?
 	    session.clear()        # no, delete this session as it's timed out in the db
@@ -21,33 +21,19 @@ def home():
 	set_user()
 	return redirect(url_for('home'))
     if request.method == 'POST':
-        if user_topics_full(user):
+        if user.topics_full():
             return render_template('/index.html', topics=get_topics(), full=True,
-                    user=user)
+                    user=user.user)
         form = TopicForm(request.form)
         if form.validate():
-            form.add(user)
+            form.add(user.user)
         return render_template('/index.html', topics=get_topics(), form=form,
-                user=user)
+                user=user.user)
     if request.method == 'GET' and request.args.get('del_topic', False):
-        del_topic(request.args['del_topic'], user)
+        user.del_topic(request.args['del_topic'])
     form = TopicForm()
     return render_template('/index.html', topics=get_topics(), form=form,
-            user=user)
-
-def del_topic(topic_hash, user):
-    name = "topic:%s:%s" % (topic_hash, user)
-    is_owner = r.exists(name)
-    if is_owner:
-        r.delete(name)
-    return
-
-def user_topics_full(user):
-    users_topics = r.keys("topic:*:%s" % user)
-    print users_topics
-    if len(users_topics) > 10:
-        return True
-    return False
+            user=user.user)
 
 def get_topics():
     topic_names = r.keys("topic:*")
@@ -71,6 +57,5 @@ def set_user():
     session['username'] = user
     r.expire(activeuser, 600)               # set user to timeout after 10 mins 
     return
-
 
 
