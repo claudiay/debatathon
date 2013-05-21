@@ -1,22 +1,43 @@
 body {
     padding: 0px;
-    background-color: #505050;
+    background-color: #006699;
 }
 
 .hide {
     visibility:hidden
 }
 
-.content {
-    background-color: #fff;
+.all {
+    color: #fff;
     max-width: 900px;
-    padding: 10px 40px;
     margin: 10px auto;
+}
+
+.all a{
+    color: #fff;
+    text-decoration:none;
+}
+
+.outter {
+    background-color: #000;
+    margin-top: 30px;
+    background-color:rgba(0,0,0,0.3);
+    -moz-border-radius: 15px;
+    border-radius: 15px;
+    padding: 5px;
+}
+
+.inner {
+    background-color: #fff;
+    color: #404040;
+    border: 2px solid #0066CC;
+    -moz-border-radius: 15px;
+    border-radius: 15px;
+    padding: 10px 40px;
 }
 
 form {
     text-align: center;
-    padding: 20px 5px;
 }
 
 div#chat_window
@@ -27,3 +48,136 @@ div#chat_window
     margin: 1px auto;
 } 
 
+::-webkit-scrollbar {
+    width: 12px;
+}
+     
+::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.2); 
+    border-radius: 10px;
+}
+             
+::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); 
+}
+
+::-webkit-scrollbar-corner {
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.2); 
+}
+
+
+.jspContainer
+{
+	overflow: hidden;
+	position: relative;
+}
+
+.jspPane
+{
+	position: absolute;
+}
+
+.jspVerticalBar
+{
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 16px;
+	height: 100%;
+	background: red;
+}
+
+.jspHorizontalBar
+{
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	height: 16px;
+	background: red;
+}
+
+.jspVerticalBar *,
+.jspHorizontalBar *
+{
+	margin: 0;
+	padding: 0;
+}
+
+.jspCap
+{
+	display: none;
+}
+
+.jspHorizontalBar .jspCap
+{
+	float: left;
+}
+
+.jspTrack
+{
+        background-color:rgba(0,0,0,0.3);    
+        position: relative;
+}
+
+.jspDrag
+{
+        background-color:rgba(0,0,0,0.3);    
+	position: relative;
+	top: 0;
+	left: 0;
+	cursor: pointer;
+}
+
+.jspHorizontalBar .jspTrack,
+.jspHorizontalBar .jspDrag
+{
+	float: left;
+	height: 100%;
+}
+
+.jspArrow
+{
+	background: #50506d;
+	text-indent: -20000px;
+	display: block;
+	cursor: pointer;
+}
+
+.jspArrow.jspDisabled
+{
+	cursor: default;
+	background: #80808d;
+}
+
+.jspVerticalBar .jspArrow
+{
+	height: 16px;
+}
+
+.jspHorizontalBar .jspArrow
+{
+	width: 16px;
+	float: left;
+	height: 100%;
+}
+
+.jspVerticalBar .jspArrow:focus
+{
+	outline: none;
+}
+
+.jspCorner
+{
+	background: #eeeef4;
+	float: left;
+	height: 100%;
+}
+
+/* Yuk! CSS Hack for IE6 3 pixel bug :( */
+* html .jspCorner
+{
+	margin: 0 -3px 0 0;
+}
