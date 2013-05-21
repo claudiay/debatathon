@@ -31,6 +31,11 @@ class handle_websocket(object):
                     elif message['type'] == 'new' and self.chatting is False:
                         self.start_new_chat(message)
 
+    def end(self):
+        self.ws.send(json.dumps({'active': False}))
+        self.chatting = False
+        return False
+
     def handle_message(self, message):
         if self.channel is False:
             return
@@ -38,9 +43,7 @@ class handle_websocket(object):
         # Publish message.
         listening = r.publish(self.channel, json.dumps(message))
         if listening != 2:
-            self.ws.send(json.dumps({'active': False}))
-            self.chatting = False
-            return
+            self.end()
 
     def handle_register(self, message):
         self.user = message['user']
@@ -63,8 +66,7 @@ class handle_websocket(object):
         # Check status of partner.
         status = self.requests_chat(topic, partner)
         if not status:
-            self.ws.send(json.dumps({'active':False}))
-            return False
+            self.end()
         return True
     
     def requests_chat(self, topic, partner):
@@ -82,6 +84,8 @@ class handle_websocket(object):
         first_message = {'type':'new', 'topic':topic, 'active': True}
         r.publish(self.channel, json.dumps(first_message))
         for data_raw in s.listen():
+            if not self.chatting:
+                break
             if data_raw['type'] == "message":
                 self.ws.send(data_raw['data'])
                 self.last_update = time.time()
@@ -92,7 +96,7 @@ class handle_websocket(object):
         while not self.chatting:
             request_num = r.llen(status_list)
             if request_num > 0:
-                chat_channel = r.lpop(status_list)
+                chat_channel = r.lindex(status_list, 0)
                 if self.handshake(chat_channel):
                     break
 
@@ -106,20 +110,19 @@ class handle_websocket(object):
                 return False
         self.chatting = True
         self.channel = chat_channel
-        t = Thread(target=self.get_replies, args=(chat_channel,))
-        t.daemon = True
-        t.start()
-        t = Thread(target=self.timer)
-        t.daemon = True
-        t.start()
+        handle_replies = Thread(target=self.get_replies, args=(chat_channel,))
+        handle_replies.daemon = True
+        handle_replies.start()
+        chat_timer = Thread(target=self.timer)
+        chat_timer.daemon = True
+        chat_timer.start()
         return True
 
     def timer(self):
         self.last_update = time.time()
         while self.chatting:
-            time.sleep(CHAT_LIMIT+1)
+            time.sleep(CHAT_LIMIT + 0.3)
             lag = time.time() - self.last_update 
             if lag > CHAT_LIMIT:
-                self.ws.send(json.dumps({'active': False}))
-                self.chatting = False
+                self.end()
 
