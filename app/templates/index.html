@@ -3,6 +3,7 @@
 <body onload="document.topic_form.new_topic.focus()">
 {% endblock %}
 {% block main %}
+<div class="outter">
 <div id="chat_window" class="hide">
     <p id="chat_text">
     Chats have started...<br>
@@ -27,7 +28,8 @@
             {% endfor %}
         {% endif %}
         </form>
-    {% endif %}
+        {% endif %}
+        <div class="inner">
     <h3>Topics:</h3>
     {% if topics %}
     <table class="table">
@@ -49,6 +51,8 @@
     {% else %}
     <h4>No one is up for debating. You start first.</h4>
     {% endif %}
+</div>
+</div>
 {% endblock %}
 {% block extra_js %}
 <script>
