@@ -5,7 +5,7 @@ import time
 from threading import Thread
 
 r = redis.Redis("localhost")
-CHAT_LIMIT = 10     #change to 10 seconds later
+CHAT_LIMIT = 10
 
 class handle_websocket(object):
 
@@ -23,16 +23,12 @@ class handle_websocket(object):
                 break
             else:
                 message = json.loads(message)
-                print "MESSAGE: ", message
                 if self.user is None:
                     self.handle_register(message)
-                    print "Registering: ", self.user
                 else:
                     if message['type'] == 'chat':
-                        print "DOING A CHAT"
                         self.handle_message(message)
                     elif message['type'] == 'new' and self.chatting is False:
-                        print "STARTING NEW"
                         self.start_new_chat(message)
 
     def handle_message(self, message):
@@ -41,8 +37,7 @@ class handle_websocket(object):
 
         # Publish message.
         listening = r.publish(self.channel, json.dumps(message))
-        print "LISTENING: ", listening
-        if listening != 1:      #TODO change to 2
+        if listening != 2:
             self.ws.send(json.dumps({'active': False}))
             self.chatting = False
             return
@@ -64,50 +59,22 @@ class handle_websocket(object):
             self.ws.send(json.dumps({'active': False}))
             return False
         partner = r.hget(topic_keys[0], 'author')
-        print "PARTNER IS: ", partner
 
         # Check status of partner.
         status = self.requests_chat(topic, partner)
-        print "STATUS IS: ", status
         if not status:
             self.ws.send(json.dumps({'active':False}))
             return False
-        else:
-            self.accept_chat(topic)
+        return True
     
     def requests_chat(self, topic, partner):
-        partner_chan = "request:%s" % partner
-        partner_requests = r.pubsub()
-        partner_requests.subscribe(partner_chan)
-        request = {'topic': topic, 'user': self.user, 'status': None}
-        r.publish(self.channel, json.dumps(request))
-        print "DID THAT SETUP"
-
+        partner_status = "request:%s" % partner
+        chat_channel = "chat:%s:%s:%s" % (topic, partner, self.user)
+        status_size = r.rpush(partner_status, chat_channel)
+        if status_size != 1:
+            return False
         while not self.chatting:
-            print "waiting for new"
-            return True
-            for data_raw in partner_requests.listen():
-                print "REQUEST CHAT: ", data_raw
-                if data_raw['type'] == "message":
-                    reply = json.loads(data_raw['data'])
-                    print "REPLY: ", reply
-                    if reply['topic'] == topic and reply['user'] == self.user:
-                        if reply['status'] == False:
-                            self.accept_chat(reply['topic'])
-                            return False
-                        elif reply['status'] == True:
-                            return True
-                print "cycle 1 done"
-                    
-    def accept_chat(self, topic):
-        self.channel = "chat:%s" % topic
-        self.chatting = True
-        t = Thread(target=self.get_replies, args=(topic,))
-        t.daemon = True
-        t.start()
-        t = Thread(target=self.timer)
-        t.daemon = True
-        t.start()
+            return self.handshake(chat_channel)
 
     def get_replies(self, topic):
         s = r.pubsub()
@@ -120,28 +87,35 @@ class handle_websocket(object):
                 self.last_update = time.time()
 
     def listen_for_requests(self):
-        request_chan = "request:%s" % self.user
-        chat_requests = r.pubsub()
-        chat_requests.subscribe(request_chan)
+        status_list = "request:%s" % self.user
+        r.delete(status_list)
         while not self.chatting:
-            print "listening for next..."
-            for data_raw in chat_requests.listen():
-                print "LISTENING: ", data_raw
-                if data_raw['type'] == "message":
-                    request = json.loads(data_raw['data'])
-                    print "LISTEN REQUEST: ", request
-                    if request['status'] == None:
-                        request['status'] = self.chatting
-                        reply = json.dumps(request)
-                        r.publish(self.channel, reply)
-                
-                        if self.chatting is False:
-                            self.accept_chat(request['topic'])
-                            print "Accepted a chat: %s to %s" % (self.user, request['user'])
+            request_num = r.llen(status_list)
+            if request_num > 0:
+                chat_channel = r.lpop(status_list)
+                if self.handshake(chat_channel):
+                    break
 
-                print "listen cycle 1, ", self.user
+    def handshake(self, chat_channel):
+        confirm_list = "confirm:%s" % chat_channel
+        confirm_num = r.rpush(confirm_list, chat_channel)
+        start = time.time()
+        while confirm_num < 2:
+            confirm_num = r.llen(confirm_list)
+            if (time.time() - start) > 3:   # Don't allow it to loop forever.
+                return False
+        self.chatting = True
+        self.channel = chat_channel
+        t = Thread(target=self.get_replies, args=(chat_channel,))
+        t.daemon = True
+        t.start()
+        t = Thread(target=self.timer)
+        t.daemon = True
+        t.start()
+        return True
 
     def timer(self):
+        self.last_update = time.time()
         while self.chatting:
             time.sleep(CHAT_LIMIT+1)
             lag = time.time() - self.last_update 
