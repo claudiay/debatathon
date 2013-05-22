@@ -29,7 +29,7 @@ class User(object):
         key = "activeuser:%s" % self.user
         return r.ttl(key) <= 0
 
-    def keep_alive(self, time=10):
+    def keep_alive(self, time=15):
         key = "activeuser:%s" % self.user
         r.expire(key, time)
         return

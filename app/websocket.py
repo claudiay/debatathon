@@ -3,7 +3,7 @@ import json
 import redis
 import time
 from threading import Thread
-from users import get_topics
+from users import User, get_topics
 
 r = redis.Redis("localhost")
 CHAT_LIMIT = 10
@@ -48,7 +48,7 @@ class handle_websocket(object):
             self.end()
 
     def handle_register(self, message):
-        self.user = message['user']
+        self.user = User(message['user'])
         t = Thread(target=self.listen_for_requests)
         t.daemon = True
         t.start()
@@ -110,6 +110,7 @@ class handle_websocket(object):
                 if self.handshake(chat_channel):
                     break
             self.update_topics()
+            self.user.keep_alive()
 
     def handshake(self, chat_channel):
         confirm_list = "confirm:%s" % chat_channel
@@ -133,7 +134,8 @@ class handle_websocket(object):
         self.last_update = time.time()
         while self.chatting:
             time.sleep(CHAT_LIMIT + 0.1)
-            lag = time.time() - self.last_update 
+            lag = time.time() - self.last_update
+            self.user.keep_alive()
             if lag >= CHAT_LIMIT:
                 self.end()
 
