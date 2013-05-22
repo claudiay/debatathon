@@ -15,6 +15,7 @@
     {% if full %}
     <center>
     <h4>Whoa whoa, your mind can only handle so many thoughts at a time.</h4>
+    (Wait for some one to chat with you, or delete one of your topics.)
     </center>
     {% endif %}
     {% if form %}
@@ -32,23 +33,21 @@
         <div class="inner">
     <h3>Topics:</h3>
     {% if topics %}
-    <table class="table">
-        <div id="topic_rows">
-    {% for topic in topics %}
-        <tr>
-            <td>{{topic.topic}}</td>
-            {% if topic.author == user %}
-            <td>
-                <a href="/?del_topic={{topic.hash}}" class="topic-remove btn btn-mini btn-danger" type="button">remove</a>
-            </td><td></td>    
-            {% else %}
-            <td></td><td>
-                <a href="#" id ="{{topic.hash}}" class="topic-chat btn btn-mini btn-success" type="button">go chat <i class="icon-arrow-right"></i></a>
-            </td>    
-            {% endif %}
-        </tr>
-        {% endfor %}
-    </div>
+    <table class="table" id="results">
+            {% for topic in topics %}
+            <tr>
+                <td>{{topic.topic}}</td>
+                {% if topic.author == user %}
+                <td>
+                    <a href="/?del_topic={{topic.hash}}" class="topic-remove btn btn-mini btn-danger" type="button">remove</a>
+                </td><td></td>    
+                {% else %}
+                <td></td><td>
+                    <a href="#" id ="{{topic.hash}}" class="topic-chat btn btn-mini btn-success" type="button">go chat <i class="icon-arrow-right"></i></a>
+                </td>    
+                {% endif %}
+            </tr>
+            {% endfor %}
     </table>
     {% else %}
     <h4>No one is up for debating. You start first.</h4>
@@ -95,6 +94,7 @@ function startChat() {
 function updateTopics(message) {
     var topic_row = '';
     var action_button = '';
+    $("#results").html("");
     for (topic in message.topics) {
         if (message.topics[topic].author === user) {
             action_button = "<td><a href='/?del_topic=" + message.topics[topic].hash + "' class='topic-remove btn btn-mini btn-danger' type='button'>remove</a></td><td></td>"; 
@@ -102,8 +102,8 @@ function updateTopics(message) {
         action_button = "<td></td><td><a href='#' id='" + message.topics[topic].hash + "' class='topic-chat btn btn-mini btn-success' type='button'>go chat <i class='icon-arrow-right'></i></a></td>";
         }
         topic_row = "<tr><td>" + message.topics[topic].topic + "</td>" + action_button + "</tr>";
-        //$("#topic_rows").html("");
-        $("#topic_rows").append(topic_row); 
+        $("#results").append(topic_row); 
+        $("a.topic-chat").click(startChat);
     }
 }
 
