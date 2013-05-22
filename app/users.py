@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-from app import r
+import redis
+r = redis.Redis("localhost")
+
 
 class User(object):
 
@@ -22,5 +24,35 @@ class User(object):
         if len(users_topics) > 10:
             return True
         return False
+
+    def not_active(self):
+        key = "activeuser:%s" % self.user
+        return r.ttl(key) <= 0
+
+    def keep_alive(self, time=10):
+        key = "activeuser:%s" % self.user
+        r.expire(key, time)
+        return
+
+
+def get_topics():
+    topic_names = r.keys("topic:*")
+    active_users = r.keys("activeuser:*")
+    
+    avaliable_users = []
+    for user in active_users:
+        user_values = r.hgetall(user)
+        username = user_values.get('name', False)
+        if username and r.llen("request:%s" % username) == 0:
+            avaliable_users.append(username)
+
+    topics = []
+    for topic in topic_names:
+        values = r.hgetall(topic)
+        if values.get('author') in avaliable_users:
+            topics.append(values)
+    if len(topics) == 0:
+        return False
+    return topics
 
 
