@@ -72,6 +72,7 @@ function isChatting() {
     $('.btn').addClass('disabled');
     $('a.btn').removeAttr('href');
     $('#topic_form').addClass('hide');
+    $('.inner').addClass('hide');
     $('#chat_box').removeClass('hide');
     $('#chat_window').removeClass('hide');
     $('#chat_box').focus();
@@ -130,7 +131,11 @@ $(function() {
                     endChatting();
                 } else {
                     isChatting();
-                    $("p#chat_text").append(message.user + ': ' + message.output + '<br />');
+                    if (message.user === user) {
+                        $("p#chat_text").append(message.user + ': ' + message.output + '<br />');
+                    } else {
+                        $("p#chat_text").append('<b>' + message.user + '</b>: ' + message.output + '<br />');
+                    }
                     document.getElementById("chat_window").scrollTop = document.getElementById("chat_window").scrollHeight;
                 }
             }

@@ -64,6 +64,7 @@ class handle_websocket(object):
             self.ws.send(json.dumps({'active': False}))
             return False
         partner = r.hget(topic_keys[0], 'author')
+        r.delete(topic_keys[0])
 
         # Check status of partner.
         status = self.requests_chat(topic, partner)
@@ -96,7 +97,6 @@ class handle_websocket(object):
         topics = get_topics()
         if topics != self.last_topics:
             message = {'type':'topics', 'active': True, 'topics': topics}
-            print topics
             self.ws.send(json.dumps(message))
             self.last_topics = topics
 
@@ -132,8 +132,8 @@ class handle_websocket(object):
     def timer(self):
         self.last_update = time.time()
         while self.chatting:
-            time.sleep(CHAT_LIMIT + 0.3)
+            time.sleep(CHAT_LIMIT + 0.1)
             lag = time.time() - self.last_update 
-            if lag > CHAT_LIMIT:
+            if lag >= CHAT_LIMIT:
                 self.end()
 
