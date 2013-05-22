@@ -33,6 +33,7 @@
     <h3>Topics:</h3>
     {% if topics %}
     <table class="table">
+        <div id="topic_rows">
     {% for topic in topics %}
         <tr>
             <td>{{topic.topic}}</td>
@@ -46,7 +47,8 @@
             </td>    
             {% endif %}
         </tr>
-    {% endfor %}
+        {% endfor %}
+    </div>
     </table>
     {% else %}
     <h4>No one is up for debating. You start first.</h4>
@@ -58,6 +60,7 @@
 <script>
 var topic = '';
 var chatting = false;
+var user = "{{user}}";
 
 $('.input').keypress(function (e) {
     if (e.which == 13) {
@@ -89,6 +92,21 @@ function startChat() {
             'active': true}));
 }
 
+function updateTopics(message) {
+    var topic_row = '';
+    var action_button = '';
+    for (topic in message.topics) {
+        if (message.topics[topic].author === user) {
+            action_button = "<td><a href='/?del_topic=" + message.topics[topic].hash + "' class='topic-remove btn btn-mini btn-danger' type='button'>remove</a></td><td></td>"; 
+        } else {
+        action_button = "<td></td><td><a href='#' id='" + message.topics[topic].hash + "' class='topic-chat btn btn-mini btn-success' type='button'>go chat <i class='icon-arrow-right'></i></a></td>";
+        }
+        topic_row = "<tr><td>" + message.topics[topic].topic + "</td>" + action_button + "</tr>";
+        //$("#topic_rows").html("");
+        $("#topic_rows").append(topic_row); 
+    }
+}
+
 $("a.topic-chat").click(startChat);
 
 $(function() {
@@ -105,6 +123,8 @@ $(function() {
                 chatting = true;
                 topic = message.topic;
                 isChatting();
+            } else if (message.type === 'topics') {
+                updateTopics(message);
             } else {
                 if (message.active === false) {
                     endChatting();
