@@ -3,7 +3,7 @@ from gevent.pywsgi import WSGIServer
 from geventwebsocket.handler import WebSocketHandler
 
 from app import my_app
-PORT = 8000
+PORT = 8080
 
 if __name__ == '__main__':
     http_server = WSGIServer(('',PORT), my_app, handler_class=WebSocketHandler)
