@@ -13,13 +13,14 @@ class handle_websocket(object):
     def __init__(self, ws):
         self.ws = ws
         self.chatting = False
+        self.running = True
         self.user = None
         self.channel = False
         self.last_topics = {}
         self.run()
 
     def run(self):
-        while True:
+        while self.running:
             message = self.ws.receive()
             if message is None:
                 break
@@ -33,8 +34,20 @@ class handle_websocket(object):
                     elif message['type'] == 'new' and self.chatting is False:
                         self.start_new_chat(message)
 
+    def send(self, message, j=True):
+        try:
+            if j:
+                self.ws.send(json.dumps(message))
+            else:
+                self.ws.send(message)
+        except:
+            self.running = False
+            self.chatting = False
+            return False
+        return True
+
     def end(self):
-        self.ws.send(json.dumps({'active': False}))
+        self.send({'active': False})
         self.chatting = False
         return False
 
@@ -61,7 +74,7 @@ class handle_websocket(object):
         # Find topic key and information.
         topic_keys = r.keys(topic_pattern)
         if len(topic_keys) != 1:    # Doesn't exist or something went wrong.
-            self.ws.send(json.dumps({'active': False}))
+            self.send({'active': False})
             return False
         partner = r.hget(topic_keys[0], 'author')
         r.delete(topic_keys[0])
@@ -90,20 +103,21 @@ class handle_websocket(object):
             if not self.chatting:
                 break
             if data_raw['type'] == "message":
-                self.ws.send(data_raw['data'])
+                if not self.send(data_raw['data'], j=False):
+                    break
                 self.last_update = time.time()
 
     def update_topics(self):
         topics = get_topics()
         if topics != self.last_topics:
             message = {'type':'topics', 'active': True, 'topics': topics}
-            self.ws.send(json.dumps(message))
+            self.send(message)
             self.last_topics = topics
 
     def listen_for_requests(self):
         status_list = "request:%s" % self.user
         r.delete(status_list)
-        while not self.chatting:
+        while not self.chatting and self.running:
             request_num = r.llen(status_list)
             if request_num > 0:
                 chat_channel = r.lindex(status_list, 0)
@@ -132,7 +146,7 @@ class handle_websocket(object):
 
     def timer(self):
         self.last_update = time.time()
-        while self.chatting:
+        while self.chatting and self.running:
             time.sleep(CHAT_LIMIT + 0.1)
             lag = time.time() - self.last_update
             self.user.keep_alive()
