@@ -32,7 +32,7 @@ class User(object):
     def keep_alive(self, time=15):
         key = "activeuser:%s" % self.user
         r.expire(key, time)
-        return
+	return
 
 
 def get_topics():
