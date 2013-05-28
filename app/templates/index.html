@@ -159,7 +159,9 @@ $(function() {
     });
 
     window.onbeforeunload = function() {
-        ws.onclose = function () {};
+        ws.onclose = function () {
+		console.log("hello, i'm cloossinnnggg");
+	};
         ws.close();
     };
 });

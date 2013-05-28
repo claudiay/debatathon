@@ -5,7 +5,8 @@ from flask import Flask
 from websocket import handle_websocket
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+#app.secret_key = os.urandom(24)
+app.secret_key = "213jdsaidua9disk29jkdj9asd90asds"
 app.debug = True
 r = redis.Redis("localhost")
 
