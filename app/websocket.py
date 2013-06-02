@@ -96,7 +96,10 @@ class handle_websocket(object):
     def get_replies(self, topic):
         s = r.pubsub()
         s.subscribe(self.channel)
-        first_message = {'type':'new', 'topic':topic, 'active': True}
+        name = r.keys("topic:%s:*" % topic.split(":")[1])[0]
+        topic_name = r.hget(name, "topic")
+        first_message = {'type':'new', 'topic':topic, 'topic_name': topic_name,
+                        'active': True}
         r.publish(self.channel, json.dumps(first_message))
         for data_raw in s.listen():
             if not self.chatting:
