@@ -11,8 +11,8 @@ class TopicForm(Form):
 
     def validate_new_topic(form, field):
         topic = field.data.strip()
-	if len(topic) < 6 or len(topic) > 94:
-            raise ValidationError("Topic must be between 6 and 94 words.")
+	if len(topic) < 1 or len(topic) > 94:
+            raise ValidationError("Topic must be between 1 and 94 characters.")
         m = hashlib.md5()
         m.update(topic)
         form.topic_hash = m.hexdigest()

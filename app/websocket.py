@@ -77,7 +77,6 @@ class handle_websocket(object):
             self.send({'active': False})
             return False
         partner = r.hget(topic_keys[0], 'author')
-        r.delete(topic_keys[0])
 
         # Check status of partner.
         status = self.requests_chat(topic, partner)
