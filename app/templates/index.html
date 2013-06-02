@@ -4,11 +4,12 @@
 {% endblock %}
 {% block main %}
 <div class="outter">
-<div id="chat_window" class="hide">
-    <p id="chat_text">
-    Chats have started...<br>
-    </p>
-</div>
+    <div id="chat_window" class="hide">
+        <h3 id="subject"></h3>
+        <p id="chat_text">
+            Chats have started...<br>
+        </p>
+    </div>
 <form id="chat_form" method="post">
     <input type="text" name="text" id="chat_box" class="input-xxlarge hide" maxlength="200" placeholder="Chat something quickly!" />
 </form>
@@ -36,15 +37,14 @@
     <table class="table" id="results">
             {% for topic in topics %}
             <tr>
-                <td>{{topic.topic}}</td>
                 {% if topic.author == user %}
+                <td>{{topic.topic}}</td>
                 <td>
                     <a href="/?del_topic={{topic.hash}}" class="topic-remove btn btn-mini btn-danger" type="button">remove</a>
-                </td><td></td>    
-                {% else %}
-                <td></td><td>
-                    <a href="#" id ="{{topic.hash}}" class="topic-chat btn btn-mini btn-success" type="button">go chat <i class="icon-arrow-right"></i></a>
                 </td>    
+                {% else %}
+                <td><a href="#" id="{{topic.hash}}" class="topic-chat">{{topic.topic}}</a></td>
+                <td></td>    
                 {% endif %}
             </tr>
             {% endfor %}
@@ -98,11 +98,11 @@ function updateTopics(message) {
     $("#results").html("");
     for (topic in message.topics) {
         if (message.topics[topic].author === user) {
-            action_button = "<td><a href='/?del_topic=" + message.topics[topic].hash + "' class='topic-remove btn btn-mini btn-danger' type='button'>remove</a></td><td></td>"; 
+            action_button = "<td>" + message.topics[topic].topic + "<td><a href='/?del_topic=" + message.topics[topic].hash + "' class='topic-remove btn btn-mini btn-danger' type='button'>remove</a></td>"; 
         } else {
-        action_button = "<td></td><td><a href='#' id='" + message.topics[topic].hash + "' class='topic-chat btn btn-mini btn-success' type='button'>go chat <i class='icon-arrow-right'></i></a></td>";
+        action_button = "<td><a href='#' id='" + message.topics[topic].hash + "' class='topic-chat'>" + message.topics[topic].topic + "</a></td><td></td>";
         }
-        topic_row = "<tr><td>" + message.topics[topic].topic + "</td>" + action_button + "</tr>";
+        topic_row = "<tr>" + action_button + "</tr>";
         $("#results").append(topic_row); 
         $("a.topic-chat").click(startChat);
     }
@@ -124,6 +124,7 @@ $(function() {
                 chatting = true;
                 topic = message.topic;
                 isChatting();
+                $("#subject").html(message.topic_name);
             } else if (message.type === 'topics') {
                 updateTopics(message);
             } else {
