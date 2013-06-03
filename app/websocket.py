@@ -6,7 +6,7 @@ from threading import Thread
 from users import User, get_topics
 
 r = redis.Redis("localhost")
-CHAT_LIMIT = 10
+CHAT_LIMIT = 15
 
 class handle_websocket(object):
 
