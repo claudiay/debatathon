@@ -7,7 +7,6 @@
     <div id="chat_window" class="hide">
         <h3 id="subject"></h3>
         <p id="chat_text">
-            Chats have started...<br>
         </p>
     </div>
 <form id="chat_form" method="post">
@@ -98,9 +97,17 @@ function updateTopics(message) {
     $("#results").html("");
     for (topic in message.topics) {
         if (message.topics[topic].author === user) {
-            action_button = "<td>" + message.topics[topic].topic + "<td><a href='/?del_topic=" + message.topics[topic].hash + "' class='topic-remove btn btn-mini btn-danger' type='button'>remove</a></td>"; 
+            action_button = "<td>"
+                + message.topics[topic].topic
+                + "<td><a href='/?del_topic="
+                + message.topics[topic].hash
+                + "' class='topic-remove btn btn-mini btn-danger' type='button'>remove</a></td>"; 
         } else {
-        action_button = "<td><a href='#' id='" + message.topics[topic].hash + "' class='topic-chat'>" + message.topics[topic].topic + "</a></td><td></td>";
+        action_button = "<td><a href='#' id='"
+                + message.topics[topic].hash
+                + "' class='topic-chat'>"
+                + message.topics[topic].topic
+                + "</a></td><td></td>";
         }
         topic_row = "<tr>" + action_button + "</tr>";
         $("#results").append(topic_row); 
@@ -125,18 +132,13 @@ $(function() {
                 topic = message.topic;
                 isChatting();
                 $("#subject").html(message.topic_name);
-            } else if (message.type === 'topics') {
-                updateTopics(message);
-            } else {
-                if (message.active === false) {
-                    endChatting();
-                } else {
+            } else if (message.type === 'topics') updateTopics(message);
+              else {
+                if (message.active === false) endChatting();
+                else {
                     isChatting();
-                    if (message.user === user) {
-                        $("p#chat_text").append(message.user + ': ' + message.output + '<br />');
-                    } else {
-                        $("p#chat_text").append('<b>' + message.user + '</b>: ' + message.output + '<br />');
-                    }
+                    if (message.user === user) $("p#chat_text").append(message.user + ': ' + message.output + '<br />');
+                    else $("p#chat_text").append('<b>' + message.user + '</b>: ' + message.output + '<br />');
                     document.getElementById("chat_window").scrollTop = document.getElementById("chat_window").scrollHeight;
                 }
             }
