@@ -49,7 +49,9 @@
             {% endfor %}
     </table>
     {% else %}
-    <h4>No one is up for debating. You start first.</h4>
+    <h4 id="results-empty">No one is up for debating. You start first.</h4>
+    <table class="table" id="results">
+    </table>
     {% endif %}
 </div>
 </div>
@@ -95,6 +97,8 @@ function updateTopics(message) {
     var topic_row = '';
     var action_button = '';
     $("#results").html("");
+    $("#results-empty").html("");
+    if (message.topics[0] === undefined) $("#results-empty").append("No one is up for debating. You start first.");
     for (topic in message.topics) {
         if (message.topics[topic].author === user) {
             action_button = "<td>"
