@@ -12,8 +12,6 @@ How to chat like a sloth
 Things to do
 -------------------------------------------------------
 * Switch status threads to pub/sub.
-* Bring up error if they do not have cookies enabled
-** Allow them to see website, but not to enter in topics
 * Stylize things so they don't look awful
 
 

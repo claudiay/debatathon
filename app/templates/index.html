@@ -2,8 +2,10 @@
 {% block body_tag %}
 <body onload="document.topic_form.new_topic.focus()">
 {% endblock %}
+{% block name %}
+    (you shall be known as: {{ user }})
+{% endblock %}
 {% block main %}
-<div class="outter">
     <div id="chat_window" class="hide">
         <h3 id="subject"></h3>
         <p id="chat_text">
@@ -53,7 +55,6 @@
     <table class="table" id="results">
     </table>
     {% endif %}
-</div>
 </div>
 {% endblock %}
 {% block extra_js %}
@@ -120,6 +121,8 @@ function updateTopics(message) {
 }
 
 $("a.topic-chat").click(startChat);
+
+if ("WebSocket" not in window) window.location = "/help";
 
 $(function() {
     if ("WebSocket" in window) {
