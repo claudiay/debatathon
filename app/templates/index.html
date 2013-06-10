@@ -122,7 +122,9 @@ function updateTopics(message) {
 
 $("a.topic-chat").click(startChat);
 
-if ("WebSocket" not in window) window.location = "/help";
+if (!("WebSocket" in window) ){
+    window.location = "/help";
+}
 
 $(function() {
     if ("WebSocket" in window) {
