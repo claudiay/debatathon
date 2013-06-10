@@ -17,6 +17,7 @@ class handle_websocket(object):
         self.user = None
         self.channel = False
         self.last_topics = {}
+        self.pong = time.time()
         self.run()
 
     def run(self):
@@ -111,7 +112,7 @@ class handle_websocket(object):
 
     def update_topics(self):
         topics = get_topics()
-        if topics != self.last_topics:
+        if (topics != self.last_topics) or ((time.time() - self.pong) > 10):
             message = {'type':'topics', 'active': True, 'topics': topics}
             self.send(message)
             self.last_topics = topics
