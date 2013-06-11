@@ -38,8 +38,10 @@ class handle_websocket(object):
     def send(self, message, j=True):
         try:
             if j:
+                self.user.keep_alive()
                 self.ws.send(json.dumps(message))
             else:
+                self.user.keep_alive()
                 self.ws.send(message)
         except:
             self.running = False

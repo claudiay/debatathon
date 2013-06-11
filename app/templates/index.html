@@ -15,7 +15,7 @@
     <input type="text" name="text" id="chat_box" class="input-xxlarge hide" maxlength="200" placeholder="Chat something quickly!" />
 </form>
     {% if full %}
-    <center>
+    <center id="topic-limit">
     <h4>Whoa whoa, your mind can only handle so many thoughts at a time.</h4>
     (Wait for some one to chat with you, or delete one of your topics.)
     </center>
@@ -71,6 +71,7 @@ $('.input').keypress(function (e) {
 });
 
 function isChatting() {
+    $("#topic-limit").html("");
     $('.btn').addClass('disabled');
     $('a.btn').removeAttr('href');
     $('#topic_form').addClass('hide');
