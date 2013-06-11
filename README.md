@@ -11,6 +11,7 @@ How to chat like a sloth
 
 Things to do
 -------------------------------------------------------
+* Add timer to side of chats.
 * Switch status threads to pub/sub.
 * Stylize things so they don't look awful
 
