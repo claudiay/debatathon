@@ -153,9 +153,12 @@ class handle_websocket(object):
     def timer(self):
         self.last_update = time.time()
         while self.chatting and self.running:
-            time.sleep(CHAT_LIMIT + 0.1)
+            time.sleep(1)
             lag = time.time() - self.last_update
             self.user.keep_alive()
+            message = {'type':'timer', 'active': True,
+                    'time': int(CHAT_LIMIT - lag)}
+            self.send(message)
             if lag >= CHAT_LIMIT:
                 self.end()
 
