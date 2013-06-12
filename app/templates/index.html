@@ -12,6 +12,7 @@
         </p>
     </div>
 <form id="chat_form" method="post">
+    <span id="timer" class="pull-right hide">15</span>
     <input type="text" name="text" id="chat_box" class="input-xxlarge hide" maxlength="200" placeholder="Chat something quickly!" />
 </form>
     {% if full %}
@@ -78,6 +79,7 @@ function isChatting() {
     $('.inner').addClass('hide');
     $('#chat_box').removeClass('hide');
     $('#chat_window').removeClass('hide');
+    $('#timer').removeClass('hide');
     $('#chat_box').focus();
     chatting = true;
 }
