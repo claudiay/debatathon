@@ -15,13 +15,23 @@ def home():
 	if user.not_active():
 	    session.clear()
 	    set_user()
-	    return redirect(url_for('home'))
+	    return redirect(url_for('retry'))
 	else:
             user.keep_alive(time=600)
     else:
 	set_user()
-	return redirect(url_for('home'))
-    
+	return redirect(url_for('retry'))
+
+    return chat(user)
+
+@app.route("/retry", methods=['GET'])
+def retry():
+    if 'username' not in session:
+        return redirect(url_for('help'))
+    else:
+        return redirect(url_for('home'))
+
+def chat(user):
     # Creating new topics.
     if request.method == 'POST':
         if user.topics_full():
@@ -39,6 +49,10 @@ def home():
     form = TopicForm()
     return render_template('/index.html', topics=get_topics(), form=form,
             user=user.user)
+
+@app.route("/help", methods=['GET'])
+def help():
+    return render_template('/help.html')
 
 
 def set_user():

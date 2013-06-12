@@ -20,7 +20,7 @@ class User(object):
 
     def topics_full(self):
         users_topics = r.keys("topic:*:%s" % self.user)
-        if len(users_topics) > 2:
+        if len(users_topics) > 9:
             return True
         return False
 

@@ -2,8 +2,10 @@
 {% block body_tag %}
 <body onload="document.topic_form.new_topic.focus()">
 {% endblock %}
+{% block name %}
+    (you shall be known as: {{ user }})
+{% endblock %}
 {% block main %}
-<div class="outter">
     <div id="chat_window" class="hide">
         <h3 id="subject"></h3>
         <p id="chat_text">
@@ -13,7 +15,7 @@
     <input type="text" name="text" id="chat_box" class="input-xxlarge hide" maxlength="200" placeholder="Chat something quickly!" />
 </form>
     {% if full %}
-    <center>
+    <center id="topic-limit">
     <h4>Whoa whoa, your mind can only handle so many thoughts at a time.</h4>
     (Wait for some one to chat with you, or delete one of your topics.)
     </center>
@@ -49,9 +51,10 @@
             {% endfor %}
     </table>
     {% else %}
-    <h4>No one is up for debating. You start first.</h4>
+    <h4 id="results-empty">No one is up for debating. You start first.</h4>
+    <table class="table" id="results">
+    </table>
     {% endif %}
-</div>
 </div>
 {% endblock %}
 {% block extra_js %}
@@ -68,6 +71,7 @@ $('.input').keypress(function (e) {
 });
 
 function isChatting() {
+    $("#topic-limit").html("");
     $('.btn').addClass('disabled');
     $('a.btn').removeAttr('href');
     $('#topic_form').addClass('hide');
@@ -95,6 +99,8 @@ function updateTopics(message) {
     var topic_row = '';
     var action_button = '';
     $("#results").html("");
+    $("#results-empty").html("");
+    if (message.topics[0] === undefined) $("#results-empty").append("No one is up for debating. You start first.");
     for (topic in message.topics) {
         if (message.topics[topic].author === user) {
             action_button = "<td>"
@@ -116,6 +122,10 @@ function updateTopics(message) {
 }
 
 $("a.topic-chat").click(startChat);
+
+if (!("WebSocket" in window) ){
+    window.location = "/help";
+}
 
 $(function() {
     if ("WebSocket" in window) {
