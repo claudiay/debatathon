@@ -59,6 +59,7 @@ class handle_websocket(object):
             return
 
         # Publish message.
+        message['output'] = message['output'].replace("<", "&lt;").replace(">", "&gt;")
         listening = r.publish(self.channel, json.dumps(message))
         if listening != 2:
             self.end()
